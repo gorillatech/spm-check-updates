@@ -20,7 +20,7 @@ public struct spm_check_updates {
 
         let xcodeproj = try XcodeProj(pathString: path)
         
-        print("Checking \(path)\n")
+        print("Checking \(path)")
 
         guard let packages = xcodeproj.pbxproj.rootObject?.packages else {
             print("All packages are up to date!".green)
@@ -45,7 +45,7 @@ public struct spm_check_updates {
                 
                 if let current {
                     if latest.versionCompare(current) == .orderedDescending {
-                        result.append("\(package.name ?? package.repositoryURL ?? "unknown")          \(current)  ->  \(latest)\n")
+                        result.append("\(package.name ?? package.repositoryURL ?? "unknown")          \(current)  ->  \(latest)")
                     }
                 }
             }
