@@ -12,10 +12,10 @@ let package = Package(
         .executable(name: "spm-check-updates", targets: ["spm-check-updates"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.1"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0"),
         .package(url: "https://github.com/tuist/xcodeproj.git", from: "8.8.0"),
         .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
-        .package(url: "https://github.com/onevcat/Rainbow", .upToNextMajor(from: "4.0.0"))
+        .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

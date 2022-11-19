@@ -6,8 +6,6 @@ import Rainbow
 
 @main
 public struct spm_check_updates {
-    
-    public private(set) var text = "Hello, World!"
 
     public static func main() throws {
         
@@ -34,6 +32,7 @@ public struct spm_check_updates {
         
         var result = [String]()
 
+        bar.next()
         for package in packages {
             bar.next()
 
@@ -50,12 +49,18 @@ public struct spm_check_updates {
                 }
             }
         }
-        
+
         print("\n")
-        
-        for row in result {
-            print(row)
+
+        if result.count > 0 {
+            for row in result {
+                print(row)
+            }
+        } else {
+            print("All dependencies match the latest package versions :)".green)
         }
+
+
         
         //try! xcodeproj.write(pathString: path, override: true)
     }
