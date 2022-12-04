@@ -25,17 +25,16 @@ public struct spm_check_updates {
             return
         }
         
-        ProgressBar.defaultConfiguration = [ProgressIndex(), ProgressBarLine()]
+        ProgressBar.defaultConfiguration = [ProgressBarLine(), ProgressIndex()]
 
-        
         var bar = ProgressBar(count: packages.count)
+        bar.setValue(1)
         
         var result = [String]()
 
-        bar.next()
         for package in packages {
             bar.next()
-
+            
             if let repo = package.repositoryURL, let version = package.versionRequirement {
                 
                 let latest = getLatestTag(repo: repo)
