@@ -7,20 +7,27 @@ import Rainbow
 @main
 public struct spm_check_updates {
 
+    struct Package {
+        var url: String
+        var version: String
+    }
+    
+    
     public static func main() throws {
-        
         let contents = try FileManager.default.contentsOfDirectory(atPath: FileManager.default.currentDirectoryPath)
+
+        var packages: [Package] = []
         
-        guard let path = contents.first(where: {$0.contains(".xcodeproj")}) else {
-            print("Cannot find .xcodeproj in the current directory".red)
+        if let path = contents.first(where: {$0.contains(".xcodeproj")}) {
+            packages = try parseXcodeProj(path: path)
+        } else if let path = contents.first(where: {$0 == "Package.swift"}) {
+            packages = parsePackageSwift(path: path)
+        } else {
+            print("Cannot find .xcodeproj or Package.swift in the current directory".red)
             exit(1)
         }
-
-        let xcodeproj = try XcodeProj(pathString: path)
         
-        print("Checking \(path)")
-
-        guard let packages = xcodeproj.pbxproj.rootObject?.packages else {
+        if packages.count == 0 {
             print("All packages are up to date!".green)
             return
         }
@@ -35,17 +42,10 @@ public struct spm_check_updates {
         for package in packages {
             bar.next()
             
-            if let repo = package.repositoryURL, let version = package.versionRequirement {
-                
-                let latest = getLatestTag(repo: repo)
-                
-                let current = currentVersion(version: version)
-                
-                if let current {
-                    if latest.versionCompare(current) == .orderedDescending {
-                        result.append("\(package.name ?? package.repositoryURL ?? "unknown")          \(current)  ->  \(latest)")
-                    }
-                }
+            let latestVersion = getLatestTag(repo: package.url)
+            
+            if latestVersion.versionCompare(package.version) == .orderedDescending {
+                result.append("\(package.url)          \(package.version)  ->  \(latestVersion)")
             }
         }
 
@@ -58,10 +58,60 @@ public struct spm_check_updates {
         } else {
             print("All dependencies match the latest package versions :)".green)
         }
-
-
         
         //try! xcodeproj.write(pathString: path, override: true)
+    }
+    
+    static func parsePackageSwift(path: String) -> [Package] {
+        print("Checking \(path)")
+
+        guard let dependenciesString = try? String(contentsOfFile: path, encoding: .utf8) else {
+            print("Failed to read Package.swift file".red)
+            exit(1)
+        }
+        
+        let dependencyRegex = try! NSRegularExpression(pattern: "\\.package\\(url:\\s*\"([^\"]+)\",\\s*from:\\s*\"([^\"]*)\"\\s*\\)", options: [])
+        
+        var dependencies: [Package] = []
+        
+        dependenciesString.enumerateLines { line, _ in
+            
+            let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if let match = dependencyRegex.firstMatch(in: trimmedLine, options: [], range: NSRange(location: 0, length: trimmedLine.utf16.count)) {
+                guard match.numberOfRanges == 3 else {
+                    return
+                }
+                
+                let urlRange = Range(match.range(at: 1), in: trimmedLine)!
+                let fromRange = Range(match.range(at: 2), in: trimmedLine) ?? Range(NSRange(location: NSNotFound, length: 0), in: "")
+                
+                let urlValue = String(trimmedLine[urlRange])
+                let fromValue = String(trimmedLine[fromRange!])
+                dependencies.append(Package(url: urlValue, version: fromValue))
+            }
+        }
+        
+        return dependencies
+    }
+    
+    static func parseXcodeProj(path: String) throws -> [Package] {
+        print("Checking \(path)")
+
+        let xcodeproj = try XcodeProj(pathString: path)
+        
+        guard let packages = xcodeproj.pbxproj.rootObject?.packages else {
+            return []
+        }
+        
+        return packages.compactMap { package in
+            
+            if let repo = package.repositoryURL, let version = package.versionRequirement, let current = currentVersion(version: version) {
+                return Package(url: repo, version: current)
+            }
+            return nil
+        }
+        
     }
     
     static func currentVersion(version: XCRemoteSwiftPackageReference.VersionRequirement) -> String? {

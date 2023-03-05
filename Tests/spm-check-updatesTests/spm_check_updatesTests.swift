@@ -6,6 +6,5 @@ final class spm_check_updatesTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(spm_check_updates().text, "Hello, World!")
     }
 }
