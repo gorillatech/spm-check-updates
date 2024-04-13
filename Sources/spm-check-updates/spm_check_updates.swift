@@ -137,9 +137,9 @@ public struct spm_check_updates {
         //[0-9]*\\.[0-9]*\\.[0-9]*
         // matches only numeric values (seems to be whats xcode does by default), hownever some repos (facebook) use v15.0.0
         
-        var v1 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " '[0-9]*\\.[0-9]*\\.[0-9]*' | tail --lines=1 | cut -d '/' -f 3")
+        var v1 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " '[0-9]*\\.[0-9]*\\.[0-9]*$' | tail --lines=1 | cut -d '/' -f 3")
 
-        var v2 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " 'v[0-9]*\\.[0-9]*\\.[0-9]*' | tail --lines=1 | cut -d '/' -f 3")
+        var v2 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " 'v[0-9]*\\.[0-9]*\\.[0-9]*$' | tail --lines=1 | cut -d '/' -f 3")
 
         
         v1 = v1.trimmingCharacters(in: .whitespacesAndNewlines)
