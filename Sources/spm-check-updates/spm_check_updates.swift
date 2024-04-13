@@ -12,7 +12,6 @@ public struct spm_check_updates {
         var version: String
     }
     
-    
     public static func main() throws {
         let contents = try FileManager.default.contentsOfDirectory(atPath: FileManager.default.currentDirectoryPath)
 
@@ -41,10 +40,8 @@ public struct spm_check_updates {
 
         for package in packages {
             bar.next()
-            
-            let latestVersion = getLatestTag(repo: package.url)
-            
-            if latestVersion.versionCompare(package.version) == .orderedDescending {
+                        
+            if let latestVersion = getLatestTag(repo: package.url), latestVersion.versionCompare(package.version) == .orderedDescending {
                 result.append("\(package.url)          \(package.version)  ->  \(latestVersion)")
             }
         }
@@ -131,24 +128,22 @@ public struct spm_check_updates {
             return nil
         }
     }
-    
-    static func getLatestTag(repo: String) -> String {
         
-        //[0-9]*\\.[0-9]*\\.[0-9]*
-        // matches only numeric values (seems to be whats xcode does by default), hownever some repos (facebook) use v15.0.0
+    static func getLatestTag(repo: String) -> String? {
         
-        var v1 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " '[0-9]*\\.[0-9]*\\.[0-9]*$' | tail --lines=1 | cut -d '/' -f 3")
+        let v1 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo)
 
-        var v2 = shell("git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags " + repo + " 'v[0-9]*\\.[0-9]*\\.[0-9]*$' | tail --lines=1 | cut -d '/' -f 3")
+        let versions = v1.components(separatedBy: CharacterSet.newlines);
+                
+        let regex = try! NSRegularExpression(pattern: "(?:/v?)([0-9]+\\.[0-9]+\\.[0-9]+)$", options: [])
 
-        
-        v1 = v1.trimmingCharacters(in: .whitespacesAndNewlines)
-        v2 = v2.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        v2 = String(v2.dropFirst())
-        
-        return v1.versionCompare(v2) == .orderedAscending ? v2 : v1
-        
+        return versions.compactMap { line in
+            let range = NSRange(location: 0, length: line.utf16.count)
+            if let match = regex.firstMatch(in: line, options: [], range: range), let versionRange = Range(match.range(at: 1), in: line) {
+                return String(line[versionRange])
+            }
+            return nil
+        }.last
     }
     
     static func shell(_ command: String) -> String {
@@ -158,7 +153,7 @@ public struct spm_check_updates {
         task.standardOutput = pipe
         task.standardError = pipe
         task.arguments = ["-c", command]
-        task.launchPath = "/bin/zsh"
+        task.launchPath = "/bin/sh"
         task.standardInput = nil
         task.launch()
         
