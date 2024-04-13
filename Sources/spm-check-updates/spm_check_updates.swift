@@ -100,7 +100,7 @@ public struct spm_check_updates {
 
         let xcodeproj = try XcodeProj(pathString: path)
         
-        guard let packages = xcodeproj.pbxproj.rootObject?.packages else {
+        guard let packages = xcodeproj.pbxproj.rootObject?.remotePackages else {
             return []
         }
         

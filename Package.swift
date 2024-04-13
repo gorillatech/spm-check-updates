@@ -12,8 +12,8 @@ let package = Package(
         .executable(name: "spm-check-updates", targets: ["spm-check-updates"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
-        .package(url: "https://github.com/tuist/xcodeproj.git", from: "8.9.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.1"),
+        .package(url: "https://github.com/tuist/xcodeproj.git", from: "8.20.0"),
         .package(url: "https://github.com/jkandzi/Progress.swift", from: "0.4.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1")
     ],
